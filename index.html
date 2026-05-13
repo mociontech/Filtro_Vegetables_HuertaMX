@@ -1,0 +1,1167 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Vegetable Eater Totem</title>
+  <style>
+    :root {
+      --ui-scale: 1;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #wrap {
+      position: relative;
+      width: min(100vw, calc(100vh * 1080 / 1920));
+      height: min(100vh, calc(100vw * 1920 / 1080));
+      max-width: 1080px;
+      max-height: 1920px;
+      background: #000;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+    }
+
+    video,
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    video {
+      transform: scaleX(-1);
+    }
+
+    canvas {
+      transform: scaleX(-1);
+    }
+
+    #frameLayer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 4;
+      object-fit: cover;
+      object-position: center top;
+    }
+
+    #gameHud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    #scoreBoard {
+      position: absolute;
+      top: calc(114px * var(--ui-scale));
+      left: calc(348px * var(--ui-scale));
+      width: calc(152px * var(--ui-scale));
+      display: none;
+      align-items: center;
+      justify-content: flex-start;
+      color: #1d5b28;
+      font-size: calc(82px * var(--ui-scale));
+      font-weight: 1000;
+      letter-spacing: 0;
+      line-height: .82;
+      transform: rotate(-4deg);
+      text-shadow: 0 2px 0 rgba(255, 255, 255, .18);
+    }
+
+    #timerPanel {
+      position: absolute;
+      top: calc(224px * var(--ui-scale));
+      right: calc(108px * var(--ui-scale));
+      display: none;
+      align-items: center;
+      gap: calc(12px * var(--ui-scale));
+      padding: calc(12px * var(--ui-scale)) calc(20px * var(--ui-scale));
+      border-radius: calc(999px * var(--ui-scale));
+      background: rgba(8, 48, 22, .74);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .32);
+      backdrop-filter: blur(6px);
+    }
+
+    #timeLabel {
+      font-size: calc(24px * var(--ui-scale));
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: rgba(255, 255, 255, .9);
+    }
+
+    #timeNum {
+      min-width: calc(56px * var(--ui-scale));
+      text-align: center;
+      font-size: calc(52px * var(--ui-scale));
+      font-weight: 1000;
+      color: #fff;
+      line-height: 1;
+    }
+
+    #countdown {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(300px * var(--ui-scale));
+      font-weight: 1000;
+      color: #fff;
+      -webkit-text-stroke: calc(6px * var(--ui-scale)) rgba(20, 67, 32, .9);
+      text-shadow: 0 calc(12px * var(--ui-scale)) calc(42px * var(--ui-scale)) rgba(0, 0, 0, .7);
+    }
+
+    #startOverlay {
+      position: absolute;
+      inset: 0;
+      z-index: 7;
+      display: none;
+    }
+
+    .preGameScreen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      pointer-events: auto;
+    }
+
+    #startScreen {
+      background: url("./Public/Inicio.png") center/cover no-repeat;
+    }
+
+    #registerScreen {
+      background: url("./Public/registro.png") center/cover no-repeat;
+    }
+
+    #codeScreen {
+      background: url("./Public/codigo.png") center/cover no-repeat;
+    }
+
+    #instructionsScreen {
+      background: url("./Public/Pantalla_Producto-01.png") center/cover no-repeat;
+    }
+
+    .preGameScreen.is-active {
+      display: block;
+    }
+
+    .screenHotspot {
+      position: absolute;
+      cursor: pointer;
+      background: transparent;
+      touch-action: manipulation;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      appearance: none;
+    }
+
+    #startHotspot {
+      left: calc(164px * var(--ui-scale));
+      top: calc(1516px * var(--ui-scale));
+      width: calc(752px * var(--ui-scale));
+      height: calc(144px * var(--ui-scale));
+    }
+
+    .continueHotspot {
+      right: calc(68px * var(--ui-scale));
+      top: calc(36px * var(--ui-scale));
+      width: calc(336px * var(--ui-scale));
+      height: calc(144px * var(--ui-scale));
+    }
+
+    .registerStartHotspot,
+    .codeStartHotspot,
+    #instructionsPlayHotspot {
+      left: calc(164px * var(--ui-scale));
+      width: calc(752px * var(--ui-scale));
+      height: calc(144px * var(--ui-scale));
+    }
+
+    .registerStartHotspot,
+    .codeStartHotspot {
+      top: calc(1581px * var(--ui-scale));
+    }
+
+    #instructionsPlayHotspot {
+      top: calc(1650px * var(--ui-scale));
+    }
+
+    .registerCodeHotspot {
+      left: calc(294px * var(--ui-scale));
+      top: calc(1752px * var(--ui-scale));
+      width: calc(492px * var(--ui-scale));
+      height: calc(86px * var(--ui-scale));
+    }
+
+    .codeRegisterHotspot {
+      left: calc(374px * var(--ui-scale));
+      top: calc(1752px * var(--ui-scale));
+      width: calc(332px * var(--ui-scale));
+      height: calc(86px * var(--ui-scale));
+    }
+
+    .registerField,
+    .codeField {
+      position: absolute;
+      border: 0;
+      outline: none;
+      background: rgba(25, 84, 31, .98);
+      color: #f1f5ea;
+      border-radius: 0;
+      box-sizing: border-box;
+      caret-color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    .registerField::placeholder,
+    .codeField::placeholder {
+      color: rgba(196, 211, 178, .92);
+    }
+
+    .registerField {
+      left: calc(108px * var(--ui-scale));
+      width: calc(863px * var(--ui-scale));
+      height: calc(97px * var(--ui-scale));
+      padding: 0 calc(46px * var(--ui-scale));
+      font-size: calc(42px * var(--ui-scale));
+      font-weight: 700;
+      line-height: calc(97px * var(--ui-scale));
+    }
+
+    .registerField[data-field="name"] {
+      top: calc(869px * var(--ui-scale));
+    }
+
+    .registerField[data-field="company"] {
+      top: calc(993px * var(--ui-scale));
+    }
+
+    .registerField[data-field="phone"] {
+      top: calc(1116px * var(--ui-scale));
+    }
+
+    .registerField[data-field="email"] {
+      top: calc(1239px * var(--ui-scale));
+      font-size: calc(38px * var(--ui-scale));
+    }
+
+    .registerField[data-field="area"] {
+      top: calc(1366px * var(--ui-scale));
+      font-size: calc(33px * var(--ui-scale));
+    }
+
+    #registerArea {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding-right: calc(96px * var(--ui-scale));
+      background-image:
+        linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, .9) 50%),
+        linear-gradient(135deg, rgba(255, 255, 255, .9) 50%, transparent 50%);
+      background-position:
+        calc(100% - (42px * var(--ui-scale))) calc(50% - (7px * var(--ui-scale))),
+        calc(100% - (24px * var(--ui-scale))) calc(50% - (7px * var(--ui-scale)));
+      background-size: calc(12px * var(--ui-scale)) calc(12px * var(--ui-scale));
+      background-repeat: no-repeat;
+      cursor: pointer;
+    }
+
+    #registerArea:invalid {
+      color: rgba(196, 211, 178, .92);
+    }
+
+    #registerArea option {
+      background: #0aa138;
+      color: #fff;
+      font-size: calc(32px * var(--ui-scale));
+      font-weight: 700;
+    }
+
+    #registerArea option[value=""] {
+      background: #19541f;
+      color: rgba(196, 211, 178, .92);
+    }
+
+    .fieldInvalid {
+      box-shadow: 0 0 0 calc(4px * var(--ui-scale)) rgba(209, 41, 41, .9) inset;
+    }
+
+    .codeField {
+      top: calc(960px * var(--ui-scale));
+      height: calc(272px * var(--ui-scale));
+      text-align: center;
+      font-size: calc(72px * var(--ui-scale));
+      font-weight: 800;
+      letter-spacing: calc(2px * var(--ui-scale));
+      color: #fff;
+    }
+
+    .codeField::placeholder {
+      color: rgba(255, 255, 255, .34);
+    }
+
+    .codeField[data-part="left"] {
+      left: calc(160px * var(--ui-scale));
+      width: calc(328px * var(--ui-scale));
+    }
+
+    .codeField[data-part="right"] {
+      left: calc(592px * var(--ui-scale));
+      width: calc(328px * var(--ui-scale));
+    }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      z-index: 6;
+    }
+
+    #resultsScreen {
+      position: absolute;
+      inset: 0;
+      background: url("./Public/Group 13.png") center/cover no-repeat;
+      pointer-events: auto;
+    }
+
+    .resultCount {
+      position: absolute;
+      width: calc(138px * var(--ui-scale));
+      color: #fff;
+      text-align: center;
+      font-size: calc(56px * var(--ui-scale));
+      font-weight: 800;
+      line-height: 1;
+      text-shadow: 0 calc(5px * var(--ui-scale)) calc(18px * var(--ui-scale)) rgba(0, 0, 0, .3);
+    }
+
+    .resultCount[data-key="blueberry"] {
+      left: calc(226px * var(--ui-scale));
+      top: calc(1222px * var(--ui-scale));
+    }
+
+    .resultCount[data-key="strawberry"] {
+      left: calc(470px * var(--ui-scale));
+      top: calc(1222px * var(--ui-scale));
+    }
+
+    .resultCount[data-key="mango"] {
+      left: calc(716px * var(--ui-scale));
+      top: calc(1222px * var(--ui-scale));
+    }
+
+    .resultCount[data-key="carrot"] {
+      left: calc(226px * var(--ui-scale));
+      top: calc(1492px * var(--ui-scale));
+    }
+
+    .resultCount[data-key="corn"] {
+      left: calc(470px * var(--ui-scale));
+      top: calc(1492px * var(--ui-scale));
+    }
+
+    .resultCount[data-key="broccoli"] {
+      left: calc(716px * var(--ui-scale));
+      top: calc(1492px * var(--ui-scale));
+    }
+
+    #restartHotspot {
+      position: absolute;
+      left: calc(163px * var(--ui-scale));
+      top: calc(1650px * var(--ui-scale));
+      width: calc(752px * var(--ui-scale));
+      height: calc(144px * var(--ui-scale));
+      cursor: pointer;
+      background: transparent;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div id="wrap">
+    <video id="cam" autoplay playsinline muted></video>
+    <canvas id="c"></canvas>
+    <img id="frameLayer" alt="" src="./Public/marco.png" draggable="false">
+
+    <div id="gameHud">
+      <div id="scoreBoard">0</div>
+      <div id="timerPanel">
+        <div id="timeLabel">TIEMPO</div>
+        <div id="timeNum">30</div>
+      </div>
+      <div id="countdown">3</div>
+    </div>
+
+    <div id="startOverlay">
+      <div id="startScreen" class="preGameScreen">
+        <button id="startHotspot" class="screenHotspot" aria-label="Iniciar" type="button"></button>
+      </div>
+
+      <div id="registerScreen" class="preGameScreen">
+        <button class="screenHotspot continueHotspot" id="registerSkipHotspot" aria-label="Continua sin registro" type="button"></button>
+        <input id="registerName" class="registerField" data-field="name" type="text" inputmode="text" maxlength="60" placeholder="Nombre" autocomplete="name">
+        <input id="registerCompany" class="registerField" data-field="company" type="text" inputmode="text" maxlength="80" placeholder="Empresa" autocomplete="organization">
+        <input id="registerPhone" class="registerField" data-field="phone" type="tel" inputmode="tel" maxlength="20" placeholder="Celular" autocomplete="tel">
+        <input id="registerEmail" class="registerField" data-field="email" type="email" inputmode="email" maxlength="80" placeholder="Correo electronico" autocomplete="email">
+        <select id="registerArea" class="registerField" data-field="area" autocomplete="off" required>
+          <option value="" selected>Con que area deseas establecer contacto?</option>
+          <option value="Ventas">Ventas</option>
+          <option value="Mercadotecnia">Mercadotecnia</option>
+          <option value="Adquisiciones">Adquisiciones</option>
+          <option value="Operaciones">Operaciones</option>
+          <option value="Finanzas">Finanzas</option>
+        </select>
+        <button class="screenHotspot registerStartHotspot" id="registerStartHotspot" aria-label="Empezar registro" type="button"></button>
+        <button class="screenHotspot registerCodeHotspot" id="registerCodeHotspot" aria-label="Ir a codigo ID" type="button"></button>
+      </div>
+
+      <div id="codeScreen" class="preGameScreen">
+        <button class="screenHotspot continueHotspot" id="codeSkipHotspot" aria-label="Continua sin registro" type="button"></button>
+        <input id="codeLeft" class="codeField" data-part="left" type="text" inputmode="numeric" maxlength="3" placeholder="___" autocomplete="off">
+        <input id="codeRight" class="codeField" data-part="right" type="text" inputmode="numeric" maxlength="3" placeholder="___" autocomplete="off">
+        <button class="screenHotspot codeStartHotspot" id="codeStartHotspot" aria-label="Empezar con codigo" type="button"></button>
+        <button class="screenHotspot codeRegisterHotspot" id="codeRegisterHotspot" aria-label="Ir a registro" type="button"></button>
+      </div>
+
+      <div id="instructionsScreen" class="preGameScreen">
+        <button class="screenHotspot" id="instructionsPlayHotspot" aria-label="Jugar" type="button"></button>
+      </div>
+    </div>
+
+    <div id="overlay">
+      <div id="resultsScreen">
+        <div class="resultCount" data-key="blueberry">x0</div>
+        <div class="resultCount" data-key="strawberry">x0</div>
+        <div class="resultCount" data-key="mango">x0</div>
+        <div class="resultCount" data-key="carrot">x0</div>
+        <div class="resultCount" data-key="corn">x0</div>
+        <div class="resultCount" data-key="broccoli">x0</div>
+        <div id="restartHotspot" aria-label="Finalizar" role="button" tabindex="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.10";
+
+    const { FaceLandmarker, FilesetResolver } = vision;
+
+    const designWidth = 1080;
+    const designHeight = 1920;
+    const gameDurationSeconds = 30;
+
+    const wrap = document.getElementById("wrap");
+    const video = document.getElementById("cam");
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+
+    const frameLayer = document.getElementById("frameLayer");
+    const scoreBoard = document.getElementById("scoreBoard");
+    const timerPanel = document.getElementById("timerPanel");
+    const countdownEl = document.getElementById("countdown");
+    const startOverlay = document.getElementById("startOverlay");
+    const startScreen = document.getElementById("startScreen");
+    const registerScreen = document.getElementById("registerScreen");
+    const codeScreen = document.getElementById("codeScreen");
+    const instructionsScreen = document.getElementById("instructionsScreen");
+    const startHotspot = document.getElementById("startHotspot");
+    const registerSkipHotspot = document.getElementById("registerSkipHotspot");
+    const registerStartHotspot = document.getElementById("registerStartHotspot");
+    const registerCodeHotspot = document.getElementById("registerCodeHotspot");
+    const codeSkipHotspot = document.getElementById("codeSkipHotspot");
+    const codeStartHotspot = document.getElementById("codeStartHotspot");
+    const codeRegisterHotspot = document.getElementById("codeRegisterHotspot");
+    const instructionsPlayHotspot = document.getElementById("instructionsPlayHotspot");
+    const overlay = document.getElementById("overlay");
+    const restartHotspot = document.getElementById("restartHotspot");
+    const timeNum = document.getElementById("timeNum");
+    const registerFields = {
+      name: document.getElementById("registerName"),
+      company: document.getElementById("registerCompany"),
+      phone: document.getElementById("registerPhone"),
+      email: document.getElementById("registerEmail"),
+      area: document.getElementById("registerArea"),
+    };
+    const codeFields = {
+      left: document.getElementById("codeLeft"),
+      right: document.getElementById("codeRight"),
+    };
+
+    const edibleItems = [
+      { key: "blueberry", label: "Arandano", src: "./Public/Recurso 2 1.png" },
+      { key: "carrot", label: "Zanahoria", src: "./Public/Recurso 3 2.png" },
+      { key: "strawberry", label: "Fresa", src: "./Public/Recurso 4 1.png" },
+      { key: "broccoli", label: "Brocoli", src: "./Public/Recurso 5 2.png" },
+      { key: "mango", label: "Mango", src: "./Public/Recurso 6 1.png" },
+      { key: "corn", label: "Maiz", src: "./Public/Maiz.png" },
+    ];
+
+    const imgMap = Object.fromEntries(edibleItems.map((item) => [item.key, item.src]));
+    const resultOrder = ["blueberry", "strawberry", "mango", "carrot", "corn", "broccoli"];
+    const resultCountEls = Object.fromEntries(
+      resultOrder.map((key) => [key, overlay.querySelector(`.resultCount[data-key="${key}"]`)])
+    );
+    const preGameScreens = {
+      start: startScreen,
+      register: registerScreen,
+      code: codeScreen,
+      instructions: instructionsScreen,
+    };
+
+    const frameSrc = {
+      intro: "./Public/marco.png",
+      playing: "./Public/points.png",
+    };
+    const uiAssetSrc = [
+      "./Public/Inicio.png",
+      "./Public/registro.png",
+      "./Public/codigo.png",
+      "./Public/Pantalla_Producto-01.png",
+      "./Public/Group 13.png",
+      ...Object.values(frameSrc)
+    ];
+
+    const loadedImgs = {};
+    await Promise.all([
+      ...Object.entries(imgMap).map(([key, src]) => new Promise((resolve) => {
+        const im = new Image();
+        im.onload = () => { loadedImgs[key] = im; resolve(); };
+        im.onerror = () => { loadedImgs[key] = null; resolve(); };
+        im.src = src;
+      })),
+      ...uiAssetSrc.map((src) => new Promise((resolve) => {
+        const im = new Image();
+        im.onload = resolve;
+        im.onerror = resolve;
+        im.src = src;
+      }))
+    ]);
+
+    function resize() {
+      const scale = Math.min(window.innerWidth / designWidth, window.innerHeight / designHeight);
+      document.documentElement.style.setProperty("--ui-scale", scale.toFixed(4));
+      wrap.style.width = `${Math.round(designWidth * scale)}px`;
+      wrap.style.height = `${Math.round(designHeight * scale)}px`;
+      canvas.width = video.videoWidth || window.innerWidth;
+      canvas.height = video.videoHeight || window.innerHeight;
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+    function mouthOpen(points) {
+      const up = points[13];
+      const down = points[14];
+      const left = points[33];
+      const right = points[263];
+
+      if (!up || !down || !left || !right) {
+        return { open: false, mx: 0, my: 0, ratio: 0 };
+      }
+
+      const gap = dist(up, down);
+      const faceW = dist(left, right) || 1;
+      const ratio = gap / faceW;
+      const mx = (up.x + down.x) / 2;
+      const my = (up.y + down.y) / 2;
+
+      return { open: ratio > 0.06, mx, my, ratio };
+    }
+
+    const counts = Object.fromEntries(edibleItems.map((item) => [item.key, 0]));
+    let timeLeft = gameDurationSeconds;
+    let lastTs = performance.now();
+    let gameState = "start";
+    let countdownTimerId = null;
+    let cameraStream = null;
+    let cameraInitPromise = null;
+    let landmarker = null;
+    let landmarkerInitPromise = null;
+
+    const types = edibleItems.map((item) => item.key);
+    const vegetables = [];
+    const playArea = {
+      left: 92,
+      right: 992,
+    };
+    const spawnConfig = {
+      topBand: 460,
+      minGap: 170,
+    };
+
+    function totalScore() {
+      return Object.values(counts).reduce((sum, value) => sum + value, 0);
+    }
+
+    function resetCounts() {
+      edibleItems.forEach((item) => {
+        counts[item.key] = 0;
+      });
+    }
+
+    function setFrame(mode) {
+      frameLayer.src = frameSrc[mode];
+    }
+
+    function clearCountdownTimer() {
+      if (countdownTimerId !== null) {
+        clearInterval(countdownTimerId);
+        countdownTimerId = null;
+      }
+    }
+
+    function stopCameraStream() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+        cameraStream = null;
+      }
+      video.srcObject = null;
+      resize();
+    }
+
+    async function ensureCameraReady() {
+      if (cameraStream && video.readyState >= 2) {
+        return;
+      }
+
+      if (cameraInitPromise) {
+        return cameraInitPromise;
+      }
+
+      cameraInitPromise = (async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
+          audio: false
+        });
+        cameraStream = stream;
+        video.srcObject = stream;
+        await new Promise((resolve) => {
+          video.onloadedmetadata = resolve;
+        });
+        resize();
+      })();
+
+      try {
+        await cameraInitPromise;
+      } finally {
+        cameraInitPromise = null;
+      }
+    }
+
+    async function ensureLandmarkerReady() {
+      if (landmarker) {
+        return;
+      }
+
+      if (landmarkerInitPromise) {
+        return landmarkerInitPromise;
+      }
+
+      landmarkerInitPromise = (async () => {
+        const fileset = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.10/wasm");
+        landmarker = await FaceLandmarker.createFromOptions(fileset, {
+          baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+          },
+          runningMode: "VIDEO",
+          numFaces: 1
+        });
+      })();
+
+      try {
+        await landmarkerInitPromise;
+      } finally {
+        landmarkerInitPromise = null;
+      }
+    }
+
+    async function ensureExperienceReady() {
+      await Promise.all([
+        ensureCameraReady(),
+        ensureLandmarkerReady(),
+      ]);
+    }
+
+    function showPreGameScreen(name) {
+      startOverlay.style.display = "block";
+      Object.entries(preGameScreens).forEach(([key, screen]) => {
+        screen.classList.toggle("is-active", key === name);
+      });
+    }
+
+    function clearPreGameFields() {
+      Object.values(registerFields).forEach((field) => {
+        field.value = "";
+        field.classList.remove("fieldInvalid");
+      });
+      Object.values(codeFields).forEach((field) => {
+        field.value = "";
+        field.classList.remove("fieldInvalid");
+      });
+    }
+
+    function showStartScreen() {
+      clearCountdownTimer();
+      vegetables.length = 0;
+      stopCameraStream();
+      clearPreGameFields();
+      showPreGameScreen("start");
+      overlay.style.display = "none";
+      countdownEl.style.display = "none";
+      scoreBoard.style.display = "none";
+      timerPanel.style.display = "none";
+      setFrame("intro");
+      gameState = "start";
+    }
+
+    function showRegisterScreen() {
+      showPreGameScreen("register");
+      gameState = "register";
+      Object.values(registerFields).forEach((field) => field.classList.remove("fieldInvalid"));
+      registerFields.name.focus();
+    }
+
+    function showCodeScreen() {
+      showPreGameScreen("code");
+      gameState = "code";
+      Object.values(codeFields).forEach((field) => field.classList.remove("fieldInvalid"));
+      codeFields.left.focus();
+    }
+
+    function showInstructionsScreen() {
+      showPreGameScreen("instructions");
+      gameState = "instructions";
+      instructionsPlayHotspot.focus();
+    }
+
+    function startGame() {
+      gameState = "playing";
+      countdownEl.style.display = "none";
+      scoreBoard.style.display = "flex";
+      timerPanel.style.display = "flex";
+      setFrame("playing");
+      updateHUD();
+    }
+
+    function startCountdown() {
+      clearCountdownTimer();
+      const steps = ["3", "2", "1"];
+      let index = 0;
+
+      setFrame("intro");
+      countdownEl.style.display = "flex";
+      countdownEl.textContent = steps[index];
+      scoreBoard.style.display = "none";
+      timerPanel.style.display = "none";
+
+      countdownTimerId = setInterval(() => {
+        index += 1;
+
+        if (index < steps.length) {
+          countdownEl.textContent = steps[index];
+          return;
+        }
+
+        clearCountdownTimer();
+        startGame();
+      }, 1000);
+    }
+
+    function updateResultsScreen() {
+      resultOrder.forEach((key) => {
+        resultCountEls[key].textContent = `x${counts[key]}`;
+      });
+    }
+
+    function validateRegistrationFields() {
+      let isValid = true;
+      let firstInvalidField = null;
+      Object.values(registerFields).forEach((field) => {
+        const hasValue = field.value.trim().length > 0;
+        field.classList.toggle("fieldInvalid", !hasValue);
+        if (!hasValue) {
+          isValid = false;
+          if (!firstInvalidField) firstInvalidField = field;
+        }
+      });
+      if (firstInvalidField) firstInvalidField.focus();
+      return isValid;
+    }
+
+    function validateCodeFields() {
+      let isValid = true;
+      let firstInvalidField = null;
+      Object.values(codeFields).forEach((field) => {
+        const hasValue = field.value.trim().length > 0;
+        field.classList.toggle("fieldInvalid", !hasValue);
+        if (!hasValue) {
+          isValid = false;
+          if (!firstInvalidField) firstInvalidField = field;
+        }
+      });
+      if (firstInvalidField) firstInvalidField.focus();
+      return isValid;
+    }
+
+    async function resetGame() {
+      clearCountdownTimer();
+      vegetables.length = 0;
+      resetCounts();
+      updateHUD();
+      updateResultsScreen();
+      timeLeft = gameDurationSeconds;
+      timeNum.textContent = String(gameDurationSeconds);
+      lastTs = performance.now();
+      overlay.style.display = "none";
+      try {
+        await ensureExperienceReady();
+      } catch (error) {
+        console.error("No se pudo iniciar la camara:", error);
+        alert("Debes permitir el acceso a la camara para iniciar la experiencia.");
+        return;
+      }
+      startOverlay.style.display = "none";
+      gameState = "countdown";
+      setFrame("intro");
+      startCountdown();
+    }
+
+    function backToStart() {
+      clearCountdownTimer();
+      vegetables.length = 0;
+      resetCounts();
+      updateHUD();
+      updateResultsScreen();
+      timeLeft = gameDurationSeconds;
+      timeNum.textContent = String(gameDurationSeconds);
+      lastTs = performance.now();
+      showStartScreen();
+    }
+
+    function getSpawnX(size) {
+      const scaleX = canvas.width / designWidth;
+      const minX = (playArea.left * scaleX) + (size / 2);
+      const maxX = (playArea.right * scaleX) - (size / 2);
+      const topBand = spawnConfig.topBand * (canvas.height / designHeight);
+      const minGap = spawnConfig.minGap * scaleX;
+      const nearbyVegetables = vegetables.filter((item) => !item.eaten && item.y < topBand);
+
+      if (!nearbyVegetables.length) {
+        return minX + Math.random() * Math.max(1, maxX - minX);
+      }
+
+      let bestX = minX;
+      let bestScore = -1;
+
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const candidateX = minX + Math.random() * Math.max(1, maxX - minX);
+        const nearestDistance = nearbyVegetables.reduce((closest, item) => {
+          return Math.min(closest, Math.abs(candidateX - item.x));
+        }, Number.POSITIVE_INFINITY);
+
+        const edgeDistance = Math.min(candidateX - minX, maxX - candidateX);
+        const score = Math.min(nearestDistance, minGap) + (edgeDistance * 0.12);
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestX = candidateX;
+        }
+      }
+
+      return bestX;
+    }
+
+    function spawnVegetable() {
+      const type = types[Math.floor(Math.random() * types.length)];
+      const size = (82 + Math.random() * 12) * (canvas.width / designWidth);
+      vegetables.push({
+        type,
+        x: getSpawnX(size),
+        y: -size - (Math.random() * 90),
+        size,
+        hitR: size * 0.34,
+        v: 116 + Math.random() * 136,
+        spin: (Math.random() * 2 - 1) * 1.2,
+        rot: 0,
+        opacity: 1,
+        drawScale: 1,
+        eaten: false,
+        fadeElapsed: 0,
+        fadeDuration: 0.5,
+        fadeRise: 72 + Math.random() * 26,
+      });
+    }
+
+    setInterval(() => {
+      if (gameState === "playing" && Math.random() < 0.96) {
+        spawnVegetable();
+      }
+    }, 460);
+
+    function drawVegetable(item) {
+      const im = loadedImgs[item.type];
+      item.rot += item.spin * 0.03;
+
+      ctx.save();
+      ctx.translate(item.x, item.y);
+      ctx.rotate(item.rot);
+      ctx.scale(item.drawScale, item.drawScale);
+      ctx.globalAlpha = item.opacity;
+
+      if (im) {
+        const baseW = im.naturalWidth || im.width;
+        const baseH = im.naturalHeight || im.height;
+        const scale = item.size / Math.max(baseW, baseH);
+        const drawW = baseW * scale;
+        const drawH = baseH * scale;
+        ctx.drawImage(im, -drawW / 2, -drawH / 2, drawW, drawH);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, item.hitR, 0, Math.PI * 2);
+        ctx.fillStyle = "#f28c28";
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function updateHUD() {
+      scoreBoard.textContent = String(totalScore());
+    }
+
+    function endGame() {
+      gameState = "ended";
+      scoreBoard.style.display = "none";
+      timerPanel.style.display = "none";
+      updateResultsScreen();
+      overlay.style.display = "block";
+    }
+
+    function loop(ts) {
+      const dt = (ts - lastTs) / 1000;
+      lastTs = ts;
+
+      if (gameState === "playing") {
+        timeLeft -= dt;
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          timeNum.textContent = "0";
+          endGame();
+        } else {
+          timeNum.textContent = String(Math.ceil(timeLeft));
+        }
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let mouth = { open: false, mx: canvas.width / 2, my: canvas.height * 0.62, ratio: 0 };
+      if (landmarker && video.readyState >= 2) {
+        const res = landmarker.detectForVideo(video, ts);
+
+        if (res.faceLandmarks && res.faceLandmarks.length) {
+          const points = res.faceLandmarks[0].map((point) => ({
+            x: point.x * canvas.width,
+            y: point.y * canvas.height
+          }));
+          mouth = mouthOpen(points);
+        }
+      }
+
+      for (let i = vegetables.length - 1; i >= 0; i -= 1) {
+        const item = vegetables[i];
+        if (gameState === "playing") {
+          if (item.eaten) {
+            item.fadeElapsed += dt;
+            const fadeProgress = Math.min(1, item.fadeElapsed / item.fadeDuration);
+            const easedFade = fadeProgress * fadeProgress;
+            item.opacity = 1 - easedFade;
+            item.drawScale = 1 - (fadeProgress * 0.42);
+            item.y -= item.fadeRise * dt;
+            item.rot += item.spin * 0.08;
+          } else {
+            item.y += item.v * dt;
+          }
+        }
+
+        drawVegetable(item);
+
+        if (item.eaten) {
+          if (item.fadeElapsed >= item.fadeDuration) {
+            vegetables.splice(i, 1);
+          }
+          continue;
+        }
+
+        const d = Math.hypot(item.x - mouth.mx, item.y - mouth.my);
+        if (gameState === "playing" && mouth.open && d < (item.hitR + 28)) {
+          counts[item.type] += 1;
+          updateHUD();
+          item.eaten = true;
+          item.fadeElapsed = 0;
+          item.opacity = 1;
+          item.drawScale = 1;
+          continue;
+        }
+
+        if (item.y - item.size > canvas.height + 80) {
+          vegetables.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    updateHUD();
+    updateResultsScreen();
+    showStartScreen();
+    Object.values(registerFields).forEach((field) => {
+      const clearInvalid = () => {
+        if (field.value.trim()) {
+          field.classList.remove("fieldInvalid");
+        }
+      };
+      field.addEventListener("input", clearInvalid);
+      field.addEventListener("change", clearInvalid);
+      field.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          const order = Object.values(registerFields);
+          const currentIndex = order.indexOf(field);
+          const nextField = order[currentIndex + 1];
+          if (nextField) {
+            nextField.focus();
+          } else if (validateRegistrationFields()) {
+            showInstructionsScreen();
+          }
+        }
+      });
+    });
+
+    Object.values(codeFields).forEach((field) => {
+      field.addEventListener("input", () => {
+        field.value = field.value.replace(/\D/g, "").slice(0, 3);
+        if (field.value.trim()) {
+          field.classList.remove("fieldInvalid");
+        }
+        if (field === codeFields.left && field.value.length === 3) {
+          codeFields.right.focus();
+        }
+      });
+      field.addEventListener("keydown", (event) => {
+        if (event.key === "Backspace" && field === codeFields.right && !field.value) {
+          codeFields.left.focus();
+        }
+        if (event.key === "Enter") {
+          event.preventDefault();
+          if (validateCodeFields()) {
+            showInstructionsScreen();
+          }
+        }
+      });
+    });
+
+    startHotspot.addEventListener("click", showRegisterScreen);
+    startHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showRegisterScreen();
+      }
+    });
+    registerSkipHotspot.addEventListener("click", showInstructionsScreen);
+    registerSkipHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showInstructionsScreen();
+      }
+    });
+    registerStartHotspot.addEventListener("click", () => {
+      if (validateRegistrationFields()) {
+        showInstructionsScreen();
+      }
+    });
+    registerStartHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (validateRegistrationFields()) {
+          showInstructionsScreen();
+        }
+      }
+    });
+    registerCodeHotspot.addEventListener("click", showCodeScreen);
+    registerCodeHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showCodeScreen();
+      }
+    });
+    codeSkipHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showInstructionsScreen();
+      }
+    });
+    codeSkipHotspot.addEventListener("click", showInstructionsScreen);
+    codeStartHotspot.addEventListener("click", () => {
+      if (validateCodeFields()) {
+        showInstructionsScreen();
+      }
+    });
+    codeStartHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (validateCodeFields()) {
+          showInstructionsScreen();
+        }
+      }
+    });
+    codeRegisterHotspot.addEventListener("click", showRegisterScreen);
+    codeRegisterHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showRegisterScreen();
+      }
+    });
+    instructionsPlayHotspot.addEventListener("click", resetGame);
+    instructionsPlayHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        resetGame();
+      }
+    });
+    restartHotspot.addEventListener("click", backToStart);
+    restartHotspot.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        backToStart();
+      }
+    });
+    requestAnimationFrame(loop);
+  </script>
+</body>
+
+</html>
